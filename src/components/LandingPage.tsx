@@ -1,260 +1,261 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   ChevronRight, 
   ShieldCheck, 
   Zap, 
-  Users, 
   Scale, 
   Globe, 
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  MessageSquare,
+  Sparkles,
+  Bot,
+  Send,
+  Loader2
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
+import ReactMarkdown from "react-markdown";
+import { cn } from "../lib/utils";
+import { ai, SYSTEM_PROMPT } from "../lib/gemini";
 
-const FeatureCard = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
-  <motion.div 
-    whileHover={{ y: -10, rotateX: 5, rotateY: 5, translateZ: 20 }}
-    className="bg-white p-8 rounded-3xl border border-slate-100 shadow-3d hover:shadow-2xl transition-all duration-300 group preserve-3d"
-  >
-    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-inner translate-z-10">
-      <Icon size={24} />
-    </div>
-    <h3 className="text-xl font-bold text-slate-900 mb-3 translate-z-10">{title}</h3>
-    <p className="text-slate-500 leading-relaxed text-sm translate-z-10">{description}</p>
-  </motion.div>
-);
+// --- Sub-components ---
 
-const PricingCard = ({ plan, price, features, highlighted, onSelect }: { plan: string, price: string, features: string[], highlighted?: boolean, onSelect: () => void }) => (
-  <motion.div 
-    whileHover={{ scale: highlighted ? 1.08 : 1.05, rotateY: highlighted ? 0 : 5, translateZ: 50 }}
+const FloatingCard = ({ children, className, style }: { children: React.ReactNode, className?: string, style?: any }) => (
+  <motion.div
+    style={style}
     className={cn(
-      "p-8 rounded-3xl border transition-all duration-300 flex flex-col shadow-3d preserve-3d",
-      highlighted 
-        ? "bg-indigo-900 text-white border-indigo-900 scale-105 z-10" 
-        : "bg-white text-slate-900 border-slate-100"
+      "glass-3d p-6 rounded-[2rem] preserve-3d transition-shadow hover:shadow-indigo-500/10",
+      className
     )}
   >
-    <div className="translate-z-10">
-      <h3 className="text-lg font-bold mb-2">{plan}</h3>
-      <div className="flex items-baseline gap-1 mb-6">
-        <span className="text-4xl font-black">{price}</span>
-        <span className={highlighted ? "text-indigo-300" : "text-slate-400"}>/month</span>
-      </div>
-      <ul className="space-y-4 mb-8 flex-grow">
-        {features.map((f, i) => (
-          <li key={i} className="flex items-center gap-3 text-sm">
-            <CheckCircle2 size={18} className={highlighted ? "text-indigo-400" : "text-emerald-500"} />
-            <span className={highlighted ? "text-indigo-100" : "text-slate-600"}>{f}</span>
-          </li>
-        ))}
-      </ul>
-      <button 
-        onClick={onSelect}
-        className={cn(
-          "w-full py-4 rounded-xl font-bold transition-all shadow-lg",
-          highlighted 
-            ? "bg-white text-indigo-900 hover:bg-indigo-50" 
-            : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100"
-        )}
-      >
-        Get Started
-      </button>
-    </div>
+    <div className="translate-z-10">{children}</div>
   </motion.div>
 );
 
-import { cn } from "../lib/utils";
+const ChatPreview = () => {
+  const [messages, setMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([
+    { role: 'ai', content: "Welcome to the vanguard of Indian Legal Tech. How can I assist you today?" }
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim() || !ai) return;
+    const userMsg = input.trim();
+    setInput("");
+    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+    setIsLoading(true);
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [{ role: 'user', parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userMsg }] }],
+      });
+      setMessages(prev => [...prev, { role: 'ai', content: response.text || "Unexpected void response." }]);
+    } catch (e) {
+      setMessages(prev => [...prev, { role: 'ai', content: "System connection error. Please verify API configuration." }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-[450px] w-full max-w-md glass-3d rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl">
+      <div className="p-4 bg-white/5 border-b border-white/10 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center animate-pulse">
+          <Bot size={16} className="text-white" />
+        </div>
+        <div>
+          <h4 className="text-sm font-black text-white leading-none">Amicus AI</h4>
+          <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Active • RAG Powered</span>
+        </div>
+      </div>
+      
+      <div ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 scroll-smooth mask-fade-y">
+        {messages.map((msg, i) => (
+          <motion.div 
+            initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            key={i} 
+            className={cn("flex", msg.role === 'user' ? "justify-end" : "justify-start")}
+          >
+            <div className={cn(
+              "max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed",
+              msg.role === 'user' 
+                ? "bg-indigo-600 text-white rounded-tr-none" 
+                : "bg-white/10 text-slate-200 rounded-tl-none border border-white/5"
+            )}>
+              <div className="prose prose-invert prose-xs max-w-none">
+                <ReactMarkdown>
+                  {msg.content}
+                </ReactMarkdown>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="p-4 bg-black/20 border-t border-white/10">
+        <div className="relative">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Ask about Article 14..."
+            className="w-full pl-4 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          />
+          <button
+            onClick={handleSend}
+            disabled={isLoading || !input.trim()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-indigo-400 hover:text-white transition-colors"
+          >
+            {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
+  const { scrollY } = useScroll();
+  const heroY = useTransform(scrollY, [0, 500], [0, -100]);
+  const heroRotate = useTransform(scrollY, [0, 500], [0, -5]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
   return (
-    <div className="min-h-screen bg-slate-50 overflow-x-hidden">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black italic">L</div>
-            <h1 className="text-xl font-black tracking-tight text-slate-900">LegalAI <span className="text-indigo-600">India</span></h1>
+    <div className="min-h-screen bg-[#0a0502] text-white selection:bg-indigo-500/30">
+      <div className="atmosphere-bg" />
+      
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 py-6 px-10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-indigo-500/20">L</div>
+            <h1 className="text-xl font-black tracking-tight font-display">LegalAI <span className="text-indigo-500">India</span></h1>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600">
-            <a href="#features" className="hover:text-indigo-600 transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-indigo-600 transition-colors">Pricing</a>
-            <a href="#about" className="hover:text-indigo-600 transition-colors">About</a>
+          <div className="hidden lg:flex items-center gap-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+            <a href="#vision" className="hover:text-white transition-colors">Vision</a>
+            <a href="#intelligence" className="hover:text-white transition-colors">Intelligence</a>
+            <a href="#ecosystem" className="hover:text-white transition-colors">Ecosystem</a>
           </div>
           <button 
             onClick={onGetStarted}
-            className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+            className="px-6 py-2.5 glass-3d rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all"
           >
-            Sign In
+            Engage
           </button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-40 pb-20 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-xs font-black uppercase tracking-widest mb-6">
-              <Zap size={14} /> The Future of Indian Law
-            </span>
-            <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-8 max-w-4xl mx-auto">
-              Strategic Intelligence for the <span className="text-indigo-600">Modern Advocate</span>
+      <section className="relative min-h-screen flex items-center px-10 pt-20">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          
+          <motion.div style={{ y: heroY, rotateX: heroRotate, opacity }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-8">
+              <Sparkles size={12} /> Strategic Analysis 2026
+            </div>
+            <h1 className="text-6xl md:text-8xl font-black font-display leading-[0.9] mb-8">
+              THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-rose-400">METAMORPHOSIS</span> OF LAW.
             </h1>
-            <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Navigate India's legal metamorphosis with AI-driven insights, real-time market dynamics, and constitutional compliance monitoring.
+            <p className="text-lg text-slate-400 max-w-lg mb-10 leading-relaxed font-medium">
+              From passive digitisation to autonomous automation. India emerges as the undisputed frontier for scaling legal technologies.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex items-center gap-6">
               <button 
                 onClick={onGetStarted}
-                className="w-full sm:w-auto bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-2"
+                className="px-10 py-5 bg-white text-black font-black uppercase text-xs tracking-[0.2em] rounded-full hover:scale-105 transition-transform"
               >
-                Start Free Trial <ArrowRight size={20} />
+                Access Intelligence
               </button>
-              <button className="w-full sm:w-auto bg-white text-slate-600 border border-slate-200 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all">
-                View Demo
-              </button>
-            </div>
-          </motion.div>
-
-          {/* Hero Image / Mockup */}
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-20 relative max-w-5xl mx-auto"
-          >
-            <div className="bg-white p-4 rounded-[2.5rem] shadow-2xl border border-slate-100">
-              <div className="bg-slate-50 rounded-[2rem] aspect-video overflow-hidden border border-slate-100 flex items-center justify-center">
-                <div className="text-slate-300 flex flex-col items-center gap-4">
-                  <LayoutDashboard size={64} />
-                  <span className="font-bold uppercase tracking-widest text-sm">Dashboard Preview</span>
-                </div>
+              <div className="flex items-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                Live Beta
               </div>
             </div>
-            {/* Decorative elements */}
-            <div className="absolute -top-10 -left-10 w-40 h-40 bg-indigo-100 rounded-full blur-3xl opacity-50 -z-10" />
-            <div className="absolute -bottom-10 -right-10 w-60 h-60 bg-indigo-200 rounded-full blur-3xl opacity-50 -z-10" />
           </motion.div>
-        </div>
-      </section>
 
-      {/* Features Grid */}
-      <section id="features" className="py-24 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6">Engineered for Precision</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto">
-              Our platform bridges the gap between technological potential and legal reality in the Indian jurisdiction.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon={ShieldCheck}
-              title="DPDP Compliant"
-              description="Baked-in compliance with the Digital Personal Data Protection Act 2023, featuring on-device processing."
-            />
-            <FeatureCard 
-              icon={Globe}
-              title="Vernacular Support"
-              description="NLP models trained on Indian dialects to capture nuances of local legal terminology across the subcontinent."
-            />
-            <FeatureCard 
-              icon={Scale}
-              title="RAG Architecture"
-              description="Retrieval-Augmented Generation anchored to verified Indian databases to eliminate AI hallucinations."
-            />
+          <div className="relative flex justify-center lg:justify-end">
+            <motion.div 
+              style={{ y: useTransform(scrollY, [0, 500], [0, 50]) }}
+              className="relative z-10 animate-float"
+            >
+              <ChatPreview />
+            </motion.div>
+            {/* Background elements */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] -z-10" />
+            <motion.div 
+              style={{ rotate: 15, y: useTransform(scrollY, [0, 500], [0, 150]) }}
+              className="absolute -right-20 -bottom-20 w-80 h-48 glass-3d rounded-[2rem] p-6 hidden lg:block opacity-60"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <ShieldCheck size={20} className="text-indigo-400" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-white">DPDP Compliance</span>
+              </div>
+              <div className="h-2 w-full bg-white/5 rounded-full mb-2 overflow-hidden">
+                <div className="w-full h-full bg-indigo-500" />
+              </div>
+              <p className="text-[10px] text-slate-400">Strict jurisdictional data isolation active.</p>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-24 px-6">
+      {/* Vision Grid */}
+      <section id="vision" className="py-40 px-10">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6">Simple, Transparent Pricing</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto">
-              Choose the plan that fits your practice, from independent advocates to tier-one law firms.
+          <div className="flex flex-col lg:flex-row items-end justify-between mb-24 gap-10">
+            <h2 className="text-5xl font-black font-display max-w-xl">
+              SYSTEMIC GOALS & CONSTITUTIONAL IDEALS
+            </h2>
+            <p className="text-slate-400 max-w-xs text-sm italic font-medium">
+              "Artificial Intelligence is no longer viewed as a novelty but as an essential instrument of systemic reform."
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <PricingCard 
-              plan="Advocate"
-              price="$0"
-              features={[
-                "Basic Market Insights",
-                "Public Case Tracking",
-                "Standard AI Assistant",
-                "Community Support"
-              ]}
-              onSelect={onGetStarted}
-            />
-            <PricingCard 
-              plan="Professional"
-              price="$49"
-              highlighted
-              features={[
-                "Advanced Market Analytics",
-                "Unlimited AI Assistant",
-                "DPDP Compliance Tools",
-                "Priority Support",
-                "Custom Report Exports"
-              ]}
-              onSelect={onGetStarted}
-            />
-            <PricingCard 
-              plan="Enterprise"
-              price="$199"
-              features={[
-                "Multi-user Workspaces",
-                "On-device Processing",
-                "API Access",
-                "Dedicated Account Manager",
-                "Custom RAG Integration"
-              ]}
-              onSelect={onGetStarted}
-            />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 h-full">
+            <FloatingCard className="md:col-span-2 lg:col-span-1 h-80 flex flex-col justify-end">
+              <Zap size={40} className="text-indigo-400 mb-6" />
+              <h3 className="text-2xl font-black mb-3">Expedited Resolution</h3>
+              <p className="text-sm text-slate-400">Compressing manual research from days to seconds.</p>
+            </FloatingCard>
+
+            <FloatingCard className="h-80 flex flex-col justify-end">
+              <Globe size={40} className="text-rose-400 mb-6" />
+              <h3 className="text-2xl font-black mb-3">Vernacular Diversity</h3>
+              <p className="text-sm text-slate-400">Ensuring language no longer obstructs civic participation.</p>
+            </FloatingCard>
+
+            <FloatingCard className="h-80 flex flex-col justify-end">
+              <Scale size={40} className="text-amber-400 mb-6" />
+              <h3 className="text-2xl font-black mb-3">Equal Access</h3>
+              <p className="text-sm text-slate-400">Actualizing Article 14 and Case Management for all.</p>
+            </FloatingCard>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-20 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black italic">L</div>
-              <h1 className="text-xl font-black tracking-tight">LegalAI <span className="text-indigo-600">India</span></h1>
-            </div>
-            <p className="text-slate-400 max-w-sm leading-relaxed">
-              Empowering the next generation of Indian legal professionals with strategic AI intelligence and market insights.
-            </p>
+      <footer className="py-20 px-10 border-t border-white/10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black italic">L</div>
+             <p className="text-sm font-black uppercase tracking-widest font-display">LegalAI India</p>
           </div>
-          <div>
-            <h4 className="font-bold mb-6">Product</h4>
-            <ul className="space-y-4 text-slate-400 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold mb-6">Legal</h4>
-            <ul className="space-y-4 text-slate-400 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">DPDP Compliance</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-slate-800 text-center text-slate-500 text-xs">
-          © 2026 LegalAI India. All rights reserved. Strategic Analysis Report v1.0
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">
+            © 2026 RESEARCH & DEVELOPMENT UNIT • AIR:23.0
+          </p>
         </div>
       </footer>
     </div>
   );
 }
-
-import { LayoutDashboard } from "lucide-react";

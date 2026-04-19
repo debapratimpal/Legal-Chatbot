@@ -18,7 +18,11 @@ import {
   Bell,
   CreditCard,
   User as UserIcon,
-  Globe
+  Globe,
+  Bot,
+  Zap,
+  Sparkles,
+  CheckCircle2
 } from "lucide-react";
 import { 
   BarChart, 
@@ -43,34 +47,34 @@ import AuthPage from "./components/AuthPage";
 
 const SidebarItem = ({ icon: Icon, label, active, onClick }: { icon: any, label: string, active: boolean, onClick: () => void }) => (
   <motion.button
-    whileHover={{ x: 5, translateZ: 10 }}
+    whileHover={{ x: 5, translateZ: 20 }}
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
     className={cn(
-      "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 preserve-3d",
+      "flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl transition-all duration-200 preserve-3d text-[10px] font-black uppercase tracking-widest",
       active 
-        ? "bg-indigo-600 text-white shadow-3d translate-z-10" 
-        : "text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm"
+        ? "bg-white text-black shadow-lg translate-z-10" 
+        : "text-slate-400 hover:bg-white/5 hover:text-white"
     )}
   >
-    <Icon size={20} />
-    <span className="font-medium">{label}</span>
+    <Icon size={18} className={active ? "text-indigo-600" : "text-slate-500"} />
+    <span>{label}</span>
   </motion.button>
 );
 
 const StatCard = ({ label, value, subValue, icon: Icon, color }: { label: string, value: string, subValue: string, icon: any, color: string }) => (
   <motion.div 
-    whileHover={{ rotateX: 5, rotateY: -5, translateZ: 20 }}
-    className="bg-white p-6 rounded-2xl border border-slate-100 shadow-3d preserve-3d transition-all"
+    whileHover={{ rotateX: 10, rotateY: -10, translateZ: 40 }}
+    className="glass-3d p-8 rounded-[2rem] preserve-3d transition-all border border-white/5"
   >
-    <div className="flex items-start justify-between translate-z-10">
+    <div className="flex items-start justify-between translate-z-20">
       <div>
-        <p className="text-slate-500 text-sm font-medium mb-1">{label}</p>
-        <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
-        <p className={cn("text-xs font-semibold mt-1", color)}>{subValue}</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{label}</p>
+        <h3 className="text-3xl font-black font-display text-white">{value}</h3>
+        <p className={cn("text-[10px] font-black uppercase tracking-widest mt-2", color)}>{subValue}</p>
       </div>
-      <div className={cn("p-3 rounded-xl shadow-inner", color.replace('text-', 'bg-').replace('600', '100'))}>
-        <Icon size={24} className={color} />
+      <div className={cn("p-4 rounded-2xl bg-white/5 border border-white/5", color.replace('text-', 'text-'))}>
+        <Icon size={28} className={color} />
       </div>
     </div>
   </motion.div>
@@ -79,92 +83,73 @@ const StatCard = ({ label, value, subValue, icon: Icon, color }: { label: string
 const MarketChart = () => {
   const data = marketData.map(d => ({
     name: d.segment.replace('India Legal ', ''),
-    "2024 (Base)": d.baseValuation,
-    "2030 (Projected)": d.projectedValuation,
-    cagr: d.cagr
+    "Current": d.baseValuation,
+    "Planned": d.projectedValuation,
   }));
 
   return (
-    <motion.div 
-      whileHover={{ rotateX: 2 }}
-      className="bg-white p-6 rounded-2xl border border-slate-100 shadow-3d h-[400px] preserve-3d"
-    >
-      <div className="flex items-center justify-between mb-6 translate-z-10">
-        <h3 className="text-lg font-bold text-slate-900">Market Valuation Growth (USD Million)</h3>
-        <div className="flex gap-4 text-xs">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-sm" />
-            <span className="text-slate-500">2024 Base</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-indigo-200 shadow-sm" />
-            <span className="text-slate-500">2030 Projected</span>
-          </div>
-        </div>
-      </div>
-      <div className="h-full translate-z-10">
-        <ResponsiveContainer width="100%" height="80%">
-          <BarChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fill: '#64748b', fontSize: 12 }} 
-              dy={10}
-            />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fill: '#64748b', fontSize: 12 }} 
-            />
-            <Tooltip 
-              cursor={{ fill: '#f8fafc' }}
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-            />
-            <Bar dataKey="2024 (Base)" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={30} />
-            <Bar dataKey="2030 (Projected)" fill="#c7d2fe" radius={[4, 4, 0, 0]} barSize={30} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </motion.div>
+    <div className="h-full w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+          <XAxis 
+            dataKey="name" 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} 
+            dy={10}
+          />
+          <YAxis 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} 
+          />
+          <Tooltip 
+            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+            contentStyle={{ backgroundColor: '#151619', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+          />
+          <Bar dataKey="Current" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={25} />
+          <Bar dataKey="Planned" fill="#6366f133" radius={[4, 4, 0, 0]} barSize={25} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
 const LeaderCard = ({ leader }: { leader: typeof marketLeaders[0] }) => (
   <motion.div 
     whileHover={{ y: -10, rotateY: 5, translateZ: 30 }}
-    className="bg-white p-5 rounded-2xl border border-slate-100 shadow-3d preserve-3d group"
+    className="glass-3d p-6 rounded-[2rem] preserve-3d group transition-shadow hover:shadow-indigo-500/10"
   >
     <div className="flex items-start gap-4 translate-z-10">
-      <div className="flex-shrink-0 w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-indigo-600 font-bold border border-slate-100 shadow-inner">
+      <div className="flex-shrink-0 w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-indigo-400 font-black italic border border-white/10 shadow-inner">
         #{leader.rank}
       </div>
       <div className="flex-grow">
         <div className="flex items-center justify-between mb-1">
-          <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{leader.name}</h4>
+          <h4 className="font-black text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{leader.name}</h4>
           {leader.location && (
-            <span className="flex items-center gap-1 text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+            <span className="flex items-center gap-1 text-[9px] font-black text-slate-500 uppercase tracking-widest">
               <MapPin size={10} /> {leader.location}
             </span>
           )}
         </div>
-        <p className="text-xs text-indigo-600 font-medium mb-3">{leader.category}</p>
+        <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-3">{leader.category}</p>
         <div className="grid grid-cols-2 gap-3 mb-4">
           {leader.funding && (
-            <div className="bg-slate-50 p-2 rounded-lg shadow-inner">
-              <p className="text-[10px] text-slate-400 uppercase font-bold">Funding</p>
-              <p className="text-xs font-bold text-slate-700">{leader.funding}</p>
+            <div className="bg-white/5 p-2 rounded-xl border border-white/5">
+              <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">Funding</p>
+              <p className="text-[11px] font-black text-slate-200">{leader.funding}</p>
             </div>
           )}
           {leader.revenue && (
-            <div className="bg-slate-50 p-2 rounded-lg shadow-inner">
-              <p className="text-[10px] text-slate-400 uppercase font-bold">Revenue</p>
-              <p className="text-xs font-bold text-slate-700">{leader.revenue}</p>
+            <div className="bg-white/5 p-2 rounded-xl border border-white/5">
+              <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">Revenue</p>
+              <p className="text-[11px] font-black text-slate-200">{leader.revenue}</p>
             </div>
           )}
         </div>
-        <p className="text-xs text-slate-500 leading-relaxed italic">
+        <p className="text-[11px] text-slate-400 leading-relaxed italic font-medium">
           "{leader.differentiator}"
         </p>
       </div>
@@ -174,7 +159,7 @@ const LeaderCard = ({ leader }: { leader: typeof marketLeaders[0] }) => (
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([
-    { role: 'ai', content: "Hello! I'm your India Legal AI Assistant. Ask me anything about the strategic analysis report, market growth, or constitutional challenges in the Indian legal tech sector." }
+    { role: 'ai', content: "Hello! I'm your India Legal AI Assistant. Ask me anything about the strategic analysis report, market growth, or constitutional challenges." }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -206,62 +191,70 @@ const ChatInterface = () => {
       setMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
     } catch (error) {
       console.error("Gemini Error:", error);
-      setMessages(prev => [...prev, { role: 'ai', content: "Error: Unable to connect to the AI service. Please check your API key." }]);
+      setMessages(prev => [...prev, { role: 'ai', content: "Error: Unable to connect to the AI service." }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[600px] overflow-hidden">
-      <div className="p-4 border-b border-slate-50 bg-indigo-50 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-        <h3 className="text-sm font-bold text-indigo-900">Legal AI Assistant</h3>
+    <div className="glass-3d rounded-[2.5rem] border border-white/5 shadow-2xl flex flex-col h-[600px] overflow-hidden preserve-3d">
+      <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]" />
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Amicus AI • Active Neural Net</h3>
+        </div>
+        <div className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">v4.2.0-STABLE</div>
       </div>
       
-      <div ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-4 scroll-smooth">
+      <div ref={scrollRef} className="flex-grow overflow-y-auto p-6 space-y-6 scroll-smooth mask-fade-y">
         {messages.map((msg, i) => (
-          <div key={i} className={cn("flex", msg.role === 'user' ? "justify-end" : "justify-start")}>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            key={i} 
+            className={cn("flex", msg.role === 'user' ? "justify-end" : "justify-start")}
+          >
             <div className={cn(
-              "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed",
+              "max-w-[80%] p-4 rounded-2xl text-[11px] leading-relaxed",
               msg.role === 'user' 
-                ? "bg-indigo-600 text-white rounded-tr-none" 
-                : "bg-slate-100 text-slate-700 rounded-tl-none"
+                ? "bg-indigo-600 text-white rounded-tr-none shadow-lg shadow-indigo-500/10" 
+                : "glass-3d text-slate-200 rounded-tl-none border border-white/5"
             )}>
-              <div className={cn("prose prose-sm max-w-none", msg.role === 'user' ? "prose-invert" : "prose-indigo")}>
+              <div className="prose prose-invert prose-xs max-w-none">
                 <ReactMarkdown>
                   {msg.content}
                 </ReactMarkdown>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-slate-100 p-3 rounded-2xl rounded-tl-none flex items-center gap-2">
-              <Loader2 size={16} className="animate-spin text-indigo-600" />
-              <span className="text-xs text-slate-500 font-medium">Thinking...</span>
+            <div className="glass-3d p-4 rounded-2xl rounded-tl-none flex items-center gap-3">
+              <Loader2 size={16} className="animate-spin text-indigo-500" />
+              <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Processing Latencies...</span>
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-4 border-t border-slate-50 bg-slate-50/50">
+      <div className="p-6 border-t border-white/5 bg-black/20">
         <div className="relative">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Ask about market CAGR, DPDP Act, or SpotDraft..."
-            className="w-full pl-4 pr-12 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            placeholder="Query the legal corpus..."
+            className="w-full pl-6 pr-14 py-4 bg-white/5 border border-white/10 rounded-2xl text-[11px] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
           />
           <button
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg disabled:opacity-50 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-indigo-400 hover:text-white transition-colors"
           >
-            <Send size={18} />
+            <Send size={20} />
           </button>
         </div>
       </div>
@@ -353,235 +346,196 @@ export default function App() {
     return <AuthPage onAuthSuccess={() => setView('dashboard')} />;
   }
 
+  const navItems = [
+    { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
+    { id: 'leaders', label: 'Market Leaders', icon: Users },
+    { id: 'challenges', label: 'Legal Hurdles', icon: Scale },
+    { id: 'assistant', label: 'AI Assistant', icon: MessageSquare },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
+    <div className="flex h-screen bg-[#0a0502] text-white overflow-hidden font-sans">
+      <div className="atmosphere-bg opacity-40 shrink-0" />
+      
       {/* Sidebar */}
-      <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transition-transform duration-300 lg:relative lg:translate-x-0",
-        !isSidebarOpen && "-translate-x-full lg:hidden"
-      )}>
-        <div className="p-6 h-full flex flex-col">
-          <div className="flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black italic">L</div>
-            <h1 className="text-xl font-black tracking-tight text-slate-900">LegalAI <span className="text-indigo-600">India</span></h1>
+      <motion.aside 
+        initial={{ x: -300 }}
+        animate={{ x: isSidebarOpen ? 0 : -300 }}
+        className={cn(
+          "fixed lg:relative inset-y-0 left-0 z-50 w-72 glass-3d border-r border-white/5 flex flex-col p-6 transition-all duration-500",
+          !isSidebarOpen && "lg:w-0 lg:p-0 lg:border-none"
+        )}
+      >
+        <div className={cn("flex flex-col h-full", !isSidebarOpen && "opacity-0 invisible")}>
+          <div className="flex items-center gap-3 mb-12 px-2">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-indigo-500/30">L</div>
+            <h1 className="text-xl font-black tracking-tight font-display">LegalAI <span className="text-indigo-500">India</span></h1>
           </div>
           
-          <nav className="space-y-2 flex-grow">
-            <SidebarItem 
-              icon={LayoutDashboard} 
-              label="Dashboard" 
-              active={activeTab === 'dashboard'} 
-              onClick={() => setActiveTab('dashboard')} 
-            />
-            <SidebarItem 
-              icon={Users} 
-              label="Market Leaders" 
-              active={activeTab === 'leaders'} 
-              onClick={() => setActiveTab('leaders')} 
-            />
-            <SidebarItem 
-              icon={Scale} 
-              label="Legal Hurdles" 
-              active={activeTab === 'challenges'} 
-              onClick={() => setActiveTab('challenges')} 
-            />
-            <SidebarItem 
-              icon={MessageSquare} 
-              label="AI Assistant" 
-              active={activeTab === 'assistant'} 
-              onClick={() => setActiveTab('assistant')} 
-            />
-            <SidebarItem 
-              icon={Settings} 
-              label="Settings" 
-              active={activeTab === 'settings'} 
-              onClick={() => setActiveTab('settings')} 
-            />
+          <nav className="flex-1 space-y-2">
+            {navItems.map((item) => (
+              <SidebarItem 
+                key={item.id}
+                icon={item.icon} 
+                label={item.label} 
+                active={activeTab === item.id} 
+                onClick={() => setActiveTab(item.id as any)} 
+              />
+            ))}
           </nav>
 
-          <div className="mt-auto pt-6 border-t border-slate-100">
-            <div className="flex items-center gap-3 mb-6 p-2 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">RS</div>
-              <div className="flex-grow">
-                <p className="text-xs font-bold text-slate-900">Adv. Rajesh Sharma</p>
-                <p className="text-[10px] text-slate-500">Professional Plan</p>
+          <div className="mt-auto pt-8 border-t border-white/5">
+            <div className="flex items-center gap-4 mb-8 p-3 glass-3d rounded-2xl border border-white/5">
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-sm">RS</div>
+              <div className="flex-grow overflow-hidden">
+                <p className="text-[10px] font-black text-white truncate">Adv. Rajesh Sharma</p>
+                <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest">Professional Plan</p>
               </div>
             </div>
             <button 
               onClick={() => setView('landing')}
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
+              className="flex items-center gap-3 w-full px-5 py-4 rounded-2x text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20"
             >
-              <LogOut size={20} />
-              <span className="font-medium">Sign Out</span>
+              <LogOut size={16} />
+              Sign Out
             </button>
           </div>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-grow p-4 lg:p-8 overflow-y-auto">
-        <header className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 capitalize">{activeTab}</h2>
-            <p className="text-slate-500 text-sm">Strategic insights into India's legal technology evolution.</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 transition-colors relative">
-              <Bell size={20} />
-              <div className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
+      <main className="flex-1 overflow-y-auto p-10 relative z-10 scroll-smooth">
+        <header className="flex items-center justify-between mb-12">
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-3 glass-3d rounded-xl text-slate-400 hover:text-white transition-all underline-offset-4"
+            >
+              <Menu size={20} />
             </button>
-            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600">
-              <ShieldCheck size={14} className="text-green-500" />
-              DPDP Compliant
+            <div>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-500 mb-2">Systems Status • Nominal</h2>
+              <h1 className="text-4xl font-black font-display uppercase tracking-tight">
+                {navItems.find(i => i.id === activeTab)?.label}
+              </h1>
             </div>
-            <button className="lg:hidden p-2 bg-white border border-slate-200 rounded-xl" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-              {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="hidden lg:flex flex-col items-end">
+               <span className="text-[10px] font-black text-white uppercase tracking-widest">Real-time Pulse</span>
+               <span className="text-[9px] text-emerald-400 font-bold uppercase flex items-center gap-1.5">
+                  <div className="w-1 h-1 rounded-full bg-emerald-400 animate-ping" />
+                  Synced with e-Courts
+               </span>
+            </div>
+            <div className="w-px h-10 bg-white/10" />
+            <button className="p-3 glass-3d rounded-xl text-slate-400 hover:text-indigo-400 transition-all relative">
+              <Bell size={20} />
+              <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-black" />
             </button>
           </div>
         </header>
 
         <AnimatePresence mode="wait">
-          {activeTab === 'dashboard' && (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-8"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard 
-                  label="India Legal AI Market" 
-                  value="$106.3M" 
-                  subValue="+23% CAGR (2030)" 
-                  icon={TrendingUp} 
-                  color="text-indigo-600"
-                />
-                <StatCard 
-                  label="Judicial Backlog" 
-                  value="50M+" 
-                  subValue="Pending Cases" 
-                  icon={Scale} 
-                  color="text-rose-600"
-                />
-                <StatCard 
-                  label="Market Leaders" 
-                  value="10+" 
-                  subValue="Top SaaS Providers" 
-                  icon={Users} 
-                  color="text-amber-600"
-                />
-                <StatCard 
-                  label="Govt Allocation" 
-                  value="₹7,210 Cr" 
-                  subValue="e-Courts Phase III" 
-                  icon={ShieldCheck} 
-                  color="text-emerald-600"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <MarketChart />
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, scale: 0.98, rotateX: 5 }}
+            animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+            exit={{ opacity: 0, scale: 0.98, y: 10 }}
+            transition={{ duration: 0.5, type: "spring", bounce: 0 }}
+            className="preserve-3d"
+          >
+            {activeTab === 'dashboard' && (
+              <div className="space-y-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <StatCard label="Analytic Potential" value="$1.3B" subValue="+12.4% Momentum" icon={TrendingUp} color="text-indigo-400" />
+                  <StatCard label="System Backlog" value="4.5M" subValue="Compression active" icon={Scale} color="text-rose-400" />
+                  <StatCard label="AI Adoption" value="28%" subValue="+5% per quarter" icon={Bot} color="text-emerald-400" />
+                  <StatCard label="E-Courts" value="1.2k" subValue="Native integration" icon={Globe} color="text-sky-400" />
                 </div>
-                <div className="bg-indigo-900 p-8 rounded-3xl text-white relative overflow-hidden flex flex-col justify-between">
-                  <div className="relative z-10">
-                    <h3 className="text-2xl font-black mb-4 leading-tight">The Metamorphosis of Indian Law</h3>
-                    <p className="text-indigo-200 text-sm leading-relaxed mb-6">
-                      From passive digitisation to autonomous automation. The epicentre of growth is shifting to APAC, with India as the undisputed frontier.
-                    </p>
-                  </div>
-                  <div className="relative z-10">
-                    <button 
-                      onClick={() => setActiveTab('assistant')}
-                      className="flex items-center gap-2 bg-white text-indigo-900 px-6 py-3 rounded-xl font-bold text-sm hover:bg-indigo-50 transition-colors"
-                    >
-                      Ask AI Assistant <ChevronRight size={16} />
-                    </button>
-                  </div>
-                  {/* Abstract background shape */}
-                  <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-indigo-800 rounded-full blur-3xl opacity-50" />
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {activeTab === 'leaders' && (
-            <motion.div
-              key="leaders"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {marketLeaders.map((leader, i) => (
-                <LeaderCard key={i} leader={leader} />
-              ))}
-            </motion.div>
-          )}
-
-          {activeTab === 'challenges' && (
-            <motion.div
-              key="challenges"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
-            >
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="text-xl font-black text-slate-900 mb-6">Constitutional Friction Matrix</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {constitutionalHurdles.map((h, i) => (
-                    <div key={i} className="space-y-4">
-                      <div className="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-                        {h.article}
-                      </div>
-                      <h4 className="font-bold text-slate-900">{h.title}</h4>
-                      <p className="text-sm text-slate-500 leading-relaxed">{h.challenge}</p>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2 glass-3d p-10 rounded-[3rem] preserve-3d border border-white/5">
+                    <div className="flex items-center justify-between mb-10">
+                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-3">
+                         <Zap size={18} className="text-indigo-400" /> Growth Trajectory
+                      </h3>
                     </div>
-                  ))}
+                    <div className="h-[450px] w-full">
+                      <MarketChart />
+                    </div>
+                  </div>
+                  <div className="glass-3d p-10 rounded-[3rem] preserve-3d border border-white/5">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] mb-10 flex items-center gap-3">
+                       <ShieldCheck size={18} className="text-indigo-400" /> RAG Extractor Status
+                    </h3>
+                    <div className="space-y-6">
+                      {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="flex items-center gap-5 p-5 glass-3d rounded-2xl border border-white/5 group hover:bg-white/5 transition-all">
+                           <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 group-hover:scale-110 transition-transform">
+                              <Sparkles size={20} className="text-indigo-400" />
+                           </div>
+                           <div>
+                              <p className="text-[11px] font-black text-white">DPDP Module v2.{i}</p>
+                              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Optimized for Vernacular</p>
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
+            )}
+            
+            {activeTab === 'leaders' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {marketLeaders.map((leader, i) => (
+                  <LeaderCard key={i} leader={leader} />
+                ))}
+              </div>
+            )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-rose-50 p-6 rounded-3xl border border-rose-100">
-                  <h4 className="font-bold text-rose-900 mb-2">The Hallucination Crisis</h4>
-                  <p className="text-sm text-rose-700 leading-relaxed">
-                    In early 2026, the Supreme Court expressed alarm over AI-drafted petitions with fabricated precedents like "Mercy vs Mankind". Relying on non-existent judgments is now classified as severe professional misconduct.
-                  </p>
-                </div>
-                <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
-                  <h4 className="font-bold text-amber-900 mb-2">DPDP Act 2023 Compliance</h4>
-                  <p className="text-sm text-amber-700 leading-relaxed">
-                    Data Fiduciaries must ensure explicit consent and purpose limitation. Penalties for severe breaches can run as high as ₹250 crore, forcing SaaS providers to adopt on-device processing.
-                  </p>
+            {activeTab === 'challenges' && (
+              <div className="space-y-8">
+                {constitutionalHurdles.map((hurdle, i) => (
+                  <motion.div 
+                    key={i}
+                    whileHover={{ scale: 1.01, translateZ: 15 }}
+                    className="glass-3d p-12 rounded-[3.5rem] border border-white/5 relative overflow-hidden"
+                  >
+                    <div className="absolute -top-20 -right-20 w-64 h-64 bg-rose-500/5 rounded-full blur-3xl" />
+                    <div className="flex flex-col lg:flex-row items-start gap-10 relative z-10">
+                      <div className="p-6 bg-rose-500/10 rounded-3xl text-rose-400 border border-rose-500/20 shadow-lg shadow-rose-500/10">
+                        <Scale size={40} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="inline-flex items-center px-4 py-1.5 bg-rose-500/10 text-rose-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4 border border-rose-500/20">
+                          {hurdle.article}
+                        </div>
+                        <h3 className="text-4xl font-black font-display mb-6 tracking-tight uppercase">{hurdle.title}</h3>
+                        <p className="text-slate-400 leading-relaxed max-w-3xl text-lg mb-10 italic font-medium">"{hurdle.challenge}"</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === 'assistant' && (
+              <div className="h-[calc(100vh-280px)] flex items-center justify-center">
+                <div className="w-full max-w-5xl h-full animate-float">
+                   <ChatInterface />
                 </div>
               </div>
-            </motion.div>
-          )}
+            )}
 
-          {activeTab === 'assistant' && (
-            <motion.div
-              key="assistant"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="max-w-4xl mx-auto"
-            >
-              <ChatInterface />
-            </motion.div>
-          )}
-
-          {activeTab === 'settings' && (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <SettingsTab />
-            </motion.div>
-          )}
+            {activeTab === 'settings' && (
+              <div className="max-w-5xl mx-auto">
+                <SettingsTab />
+              </div>
+            )}
+          </motion.div>
         </AnimatePresence>
       </main>
     </div>
